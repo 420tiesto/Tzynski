@@ -250,119 +250,135 @@ const AudioPlayer = ({ currentTrack, isPlaying, onPlayPause, onNext, onPrev }: A
     </div>
   );
 };
+
 const MusicClient = () => {
-    const spaceshipsRef = useRef<Spaceship[]>([]);
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [currentTrack, setCurrentTrack] = useState("Initializing...");
-    const [isPlaying, setIsPlaying] = useState(true);
-    const [score, setScore] = useState(0);
-    const [highScore, setHighScore] = useState(0);
-    const soundCloudRef = useRef<SoundCloudPlayer | null>(null);
-    const explosionSystemsRef = useRef<ExplosionSystem[]>([]);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-  
-    useEffect(() => {
-      const saved = localStorage.getItem('highScore');
-      setHighScore(saved ? parseInt(saved) : 0);
-  
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-  
-      // Scene setup
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x000000, 0.03);
-  
-      // Camera setup
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      camera.position.z = 15;
-  
-      // Renderer setup
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        alpha: true,
-        antialias: true,
-      });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.5;
-  
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0x111111);
-      scene.add(ambientLight);
-  
-      const frontLight = new THREE.DirectionalLight(0x00ffcc, 2);
-      frontLight.position.set(0, 0, 10);
-      scene.add(frontLight);
-  
-      const backLight = new THREE.DirectionalLight(0x00ccff, 2);
-      backLight.position.set(0, 0, -10);
-      scene.add(backLight);
-  
-      // Dynamic spotlights
-      const spotlight1 = new THREE.SpotLight(0x00ffcc, 2);
-      spotlight1.angle = 0.4;
-      spotlight1.penumbra = 0.3;
-      spotlight1.decay = 1.5;
-      spotlight1.distance = 40;
-  
-      const spotlight2 = new THREE.SpotLight(0x00ccff, 2);
-      spotlight2.angle = 0.4;
-      spotlight2.penumbra = 0.3;
-      spotlight2.decay = 1.5;
-      spotlight2.distance = 40;
-  
-      scene.add(spotlight1, spotlight2);
-  
-      // Create spaceships
-      for (let i = 0; i < 5; i++) {
-        const spaceship = new Spaceship(scene);
-        spaceshipsRef.current.push(spaceship);
-      }
-  
-      // Text setup
-      const textGroup = new THREE.Group();
-      scene.add(textGroup);
-      const loader = new FontLoader();
+  const spaceshipsRef = useRef<Spaceship[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [currentTrack, setCurrentTrack] = useState("Initializing...");
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
+  const soundCloudRef = useRef<SoundCloudPlayer | null>(null);
+  const explosionSystemsRef = useRef<ExplosionSystem[]>([]);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('highScore');
+    setHighScore(saved ? parseInt(saved) : 0);
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x000000, 0.03);
+
+    // Camera setup
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 15;
+
+    // Renderer setup
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.5;
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x111111);
+    scene.add(ambientLight);
+
+    const frontLight = new THREE.DirectionalLight(0x00ffcc, 2);
+    frontLight.position.set(0, 0, 10);
+    scene.add(frontLight);
+
+    const backLight = new THREE.DirectionalLight(0x00ccff, 2);
+    backLight.position.set(0, 0, -10);
+    scene.add(backLight);
+
+    // Dynamic spotlights
+    const spotlight1 = new THREE.SpotLight(0x00ffcc, 2);
+    spotlight1.angle = 0.4;
+    spotlight1.penumbra = 0.3;
+    spotlight1.decay = 1.5;
+    spotlight1.distance = 40;
+
+    const spotlight2 = new THREE.SpotLight(0x00ccff, 2);
+    spotlight2.angle = 0.4;
+    spotlight2.penumbra = 0.3;
+    spotlight2.decay = 1.5;
+    spotlight2.distance = 40;
+
+    scene.add(spotlight1, spotlight2);
+
+    // Create spaceships
+    for (let i = 0; i < 5; i++) {
+      const spaceship = new Spaceship(scene);
+      spaceshipsRef.current.push(spaceship);
+    }
+
+    // Text setup
+    const textGroup = new THREE.Group();
+    scene.add(textGroup);
+    const loader = new FontLoader();
+
+    const updateTextSize = () => {
+      // Calculate size based on window width
+      const baseSize = 2.5;
+      const minSize = 1.2;
+      const scaleFactor = Math.min(window.innerWidth / 1920, 1);
+      const size = Math.max(baseSize * scaleFactor, minSize);
       
-      loader.load('/fonts/helvetiker_bold.typeface.json', (font) => {
-        const letters = "TZYNSKI".split("");
-        
-        const textMaterial = new THREE.MeshPhysicalMaterial({
-          color: 0x00ffcc,
-          emissive: 0x00ffcc,
-          emissiveIntensity: 0.3,
-          metalness: 0.7,
-          roughness: 0.3,
-          clearcoat: 0.5,
-          clearcoatRoughness: 0.2,
-          transmission: 0.1,
+      // Calculate letter spacing based on size
+      const spacing = size * 1.1;  // Adjust this multiplier to change letter spacing
+      
+      return { size, spacing };
+    };
+
+    loader.load('/fonts/helvetiker_bold.typeface.json', (font) => {
+      const letters = "TZYNSKI".split("");
+      
+      const textMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x00ffcc,
+        emissive: 0x00ffcc,
+        emissiveIntensity: 0.3,
+        metalness: 0.7,
+        roughness: 0.3,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.2,
+        transmission: 0.1,
         thickness: 0.5,
         reflectivity: 0.7,
         envMapIntensity: 0.8
       });
       
+      const { size, spacing } = updateTextSize();
+      
       letters.forEach((letter, index) => {
         const textGeometry = new TextGeometry(letter, {
           font: font,
-          size: 2.5,
-          height: 0.8,
+          size: size,
+          height: size * 0.32, // Scale height proportionally
           curveSegments: 32,
           bevelEnabled: true,
-          bevelThickness: 0.2,
-          bevelSize: 0.05,
+          bevelThickness: size * 0.08, // Scale bevel proportionally
+          bevelSize: size * 0.02,
           bevelOffset: 0,
           bevelSegments: 16
         });
 
         textGeometry.center();
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        const xPos = index * 2.5 - (letters.length * 2.5) / 2;
+        const xPos = index * spacing - (letters.length * spacing) / 2;
         textMesh.position.set(xPos, 0, 0);
         textGroup.add(textMesh);
 
@@ -476,6 +492,13 @@ const MusicClient = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      
+      // Update text size on resize
+      const { size, spacing } = updateTextSize();
+      textGroup.children.forEach((letter, index) => {
+        const xPos = index * spacing - (textGroup.children.length * spacing) / 2;
+        letter.position.setX(xPos);
+      });
     };
 
     window.addEventListener("resize", handleResize);
@@ -576,6 +599,7 @@ const MusicClient = () => {
         onNext={() => soundCloudRef.current?.next()}
         onPrev={() => soundCloudRef.current?.previous()}
       />
+      
       <iframe
         ref={iframeRef}
         className="soundcloud-player"
