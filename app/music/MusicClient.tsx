@@ -576,6 +576,7 @@ const MusicClient = () => {
         onNext={() => soundCloudRef.current?.next()}
         onPrev={() => soundCloudRef.current?.previous()}
       />
+      
       <iframe
         ref={iframeRef}
         className="soundcloud-player"
